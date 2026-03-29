@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Аня | история одной точки</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a1a;
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            background: linear-gradient(135deg, #0a0a1a 0%, #12122a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 40%, rgba(100, 80, 200, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .dialog {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            padding: 2rem;
+            background: rgba(10, 10, 26, 0.85);
+            border: 1px solid rgba(150, 120, 220, 0.3);
+            border-radius: 28px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 50px rgba(100, 80, 200, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .dialog::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .dialog::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        .dialog::-webkit-scrollbar-thumb {
+            background: #9b87ff;
+            border-radius: 4px;
+        }
+
+        .message-area {
+            flex: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .message-line {
+            color: #e0e0ff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .message-line.user {
+            color: #9b87ff;
+            border-left: 2px solid #9b87ff;
+            padding-left: 1rem;
+        }
+
+        .message-line.split {
+            background: linear-gradient(90deg, #9b87ff, #ff87b0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-line {
+            color: #e0e0ff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            min-height: 80px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2rem;
+            background-color: #9b87ff;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .btns {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .btns button {
+            border: none;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            color: #e0e0ff;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(155, 135, 255, 0.3);
+        }
+
+        .btns button:hover {
+            background: linear-gradient(135deg, #9b87ff, #7b67df);
+            color: #0a0a1a;
+            transform: scale(1.02);
+            border-color: #9b87ff;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .input-area input {
+            flex: 1;
+            background: rgba(10, 10, 26, 0.8);
+            border: 1px solid rgba(155, 135, 255, 0.4);
+            border-radius: 40px;
+            padding: 0.8rem 1.2rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            color: #e0e0ff;
+            outline: none;
+        }
+
+        .input-area input:focus {
+            border-color: #9b87ff;
+            box-shadow: 0 0 0 2px rgba(155, 135, 255, 0.3);
+        }
+
+        .input-area button {
+            background: #9b87ff;
+            border: none;
+            border-radius: 40px;
+            padding: 0.8rem 1.5rem;
+            font-family: "Roboto Mono", monospace;
+            color: #0a0a1a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-area button:hover {
+            background: #bbaaff;
+            transform: scale(1.02);
+        }
+
+        .split-screen {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .split-side {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .germany {
+            border-bottom: 2px solid #9b87ff;
+        }
+
+        .russia {
+            border-bottom: 2px solid #ff87b0;
+        }
+
+        .glitch {
+            animation: glitch 0.3s ease;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); opacity: 1; }
+            20% { transform: translate(-2px, 1px); opacity: 0.8; }
+            40% { transform: translate(2px, -1px); }
+            60% { transform: translate(-1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .dialog {
+                width: 95%;
+                padding: 1.2rem;
+            }
+            .message-line, .typing-line {
+                font-size: 0.8rem;
+            }
+            .btns button {
+                padding: 0.5rem 1rem;
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="dialog">
+            <div class="message-area" id="messageArea"></div>
+            <div id="controls"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ИСТОРИЯ АНИ ==========
+        const story = {
+            steps: {
+                0: {
+                    text: "Анечка, я знаю, ты это читаешь.\n(конечно, ведь это я скинула тебе эту ссылку)",
+                    type: "buttons",
+                    options: [
+                        { text: "💙 читаю", next: 1 }
+                    ]
+                },
+                1: {
+                    text: "Сначала была просто точка.\n\n02.03.2026\nчат\nсообщение\nты\n\n\"привет\"",
+                    type: "buttons",
+                    options: [
+                        { text: "дальше", next: 2 }
+                    ]
+                },
+                2: {
+                    text: "Я не знала, что можно влюбиться в уведомление.\n\nЯ просто ответила.\nПросто разговор.\nПросто ты оказалась… не просто.",
+                    type: "buttons",
+                    options: [
+                        { text: "ответить", next: 3 },
+                        { text: "проигнорировать", next: 3 }
+                    ]
+                },
+                3: {
+                    text: "Потому что я всё равно ответила бы.",
+                    type: "buttons",
+                    options: [
+                        { text: "💙", next: 4 }
+                    ]
+                },
+                4: {
+                    text: "03.03.2026\n\nЯ пишу тебе первой.\n\nЭто уже не случайность.\nЭто уже движение навстречу.",
+                    type: "buttons",
+                    options: [
+                        { text: "навстречу", next: 5 }
+                    ]
+                },
+                5: {
+                    text: "Ты рассказываешь о себе.\n\nИ среди всего —\nдве детали, которые почему-то застревают у меня в голове:\n\nтвой сплит и твой бампер (:\n\n(экран делится на две части, как язык)",
+                    type: "buttons",
+                    options: [
+                        { text: "две части", next: 6 }
+                    ]
+                },
+                6: {
+                    text: "Я думаю об этом странно часто.\n\nНе потому что это странно.\nА потому что это — ты.",
+                    type: "buttons",
+                    options: [
+                        { text: "это я", next: 7 }
+                    ]
+                },
+                7: {
+                    text: "10.03.2026\n\nМы начинаем встречаться.\n\nТак просто.\nТак быстро.\nТак правильно.",
+                    type: "buttons",
+                    options: [
+                        { text: "правильно", next: 8 }
+                    ]
+                },
+                8: {
+                    text: "Но есть расстояние.\n\nГермания — Россия\n\nмежду ними — пустота",
+                    type: "buttons",
+                    options: [
+                        { text: "пустота", next: 9 }
+                    ]
+                },
+                9: {
+                    text: "Я здесь.\nТы там.\n\nНо почему-то это не \"далеко\".",
+                    type: "buttons",
+                    options: [
+                        { text: "не далеко", next: 10 }
+                    ]
+                },
+                10: {
+                    text: "Иногда связь обрывается.\n\n(экран глючит)\n\nты говоришь:\n\"меня снова вызвали на работу\"",
+                    type: "buttons",
+                    options: [
+                        { text: "вызвали", next: 11 }
+                    ]
+                },
+                11: {
+                    text: "Ты продаёшь странное пиво.\nКрафтовое.\n\nЯ не до конца понимаю, какое оно на вкус.\nНо я понимаю тебя.",
+                    type: "buttons",
+                    options: [
+                        { text: "понимаю тебя", next: 12 }
+                    ]
+                },
+                12: {
+                    text: "Ты любишь:\n\nпиво\nи\nлук\n\n\nЯ люблю:\n\nкурить\nи\nпомидоры",
+                    type: "buttons",
+                    options: [
+                        { text: "идеальный тандем", next: 13 },
+                        { text: "странный тандем", next: 13 }
+                    ]
+                },
+                13: {
+                    text: "Потому что это мы. 💙",
+                    type: "buttons",
+                    options: [
+                        { text: "мы", next: 14 }
+                    ]
+                },
+                14: {
+                    text: "Каждый твой выходной —\nкак маленький праздник.",
+                    type: "buttons",
+                    options: [
+                        { text: "праздник", next: 15 }
+                    ]
+                },
+                15: {
+                    text: "Звонок.\n\nтишина → потом голос\n\nМир перестаёт шуметь.",
+                    type: "buttons",
+                    options: [
+                        { text: "тишина", next: 16 }
+                    ]
+                },
+                16: {
+                    text: "Иногда тебя снова забирают.\n\nРабота.\nЖизнь.\nРеальность.\n\nИ я остаюсь с экраном.\n\nНо теперь это не пусто.\nПотому что в нём есть ты.",
+                    type: "buttons",
+                    options: [
+                        { text: "ты во мне", next: 17 }
+                    ]
+                },
+                17: {
+                    text: "Экран снова делится на две части:\n\nкак расстояние\nкак мы\n\nНо потом медленно соединяется обратно.",
+                    type: "buttons",
+                    options: [
+                        { text: "соединяется", next: 18 }
+                    ]
+                },
+                18: {
+                    text: "Я верю в одну вещь.\n\nМы встретимся.\n\nНе \"если\".\nА \"когда\".",
+                    type: "buttons",
+                    options: [
+                        { text: "когда", next: 19 },
+                        { text: "это просто интернет", next: 19 },
+                        { text: "это что-то настоящее", next: 19 }
+                    ]
+                },
+                19: {
+                    text: "И тогда:\n\nникаких экранов\nникаких обрывов связи\n\nТолько ты.\nИ я.",
+                    type: "buttons",
+                    options: [
+                        { text: "только мы", next: 20 }
+                    ]
+                },
+                20: {
+                    text: "спасибо, что написала тогда\n02.03.2026\n\nспасибо, что осталась\n10.03.2026\n\nи спасибо, что будешь рядом\nдальше",
+                    type: "buttons",
+                    options: [
+                        { text: "💙", next: 21 }
+                    ]
+                },
+                21: {
+                    text: "я люблю тебя 💙",
+                    type: "buttons",
+                    options: [
+                        { text: "я тоже 💙", next: null, action: "end" },
+                        { text: "пройти снова", next: null, action: "restart" }
+                    ]
+                }
+            },
+            endMessages: [
+                "ты — моя любимая точка в этом огромном мире 💙"
+            ]
+        };
+
+        // ========== СОСТОЯНИЕ ==========
+        let currentStep = 0;
+        let context = {};
+        let isTyping = false;
+
+        const messageArea = document.getElementById('messageArea');
+        const controlsDiv = document.getElementById('controls');
+
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'message-line user';
+            div.innerHTML = `> ${text}`;
+            messageArea.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function clearTypingArea() {
+            const existing = document.getElementById('typingArea');
+            if (existing) existing.remove();
+        }
+
+        function typeText(text, callback) {
+            clearTypingArea();
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingArea';
+            typingDiv.className = 'typing-line';
+            messageArea.appendChild(typingDiv);
+            
+            isTyping = true;
+            let i = 0;
+            function addChar() {
+                if (i < text.length) {
+                    typingDiv.innerHTML = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(addChar, 40);
+                } else {
+                    const cursor = document.createElement('span');
+                    cursor.className = 'cursor';
+                    typingDiv.appendChild(cursor);
+                    isTyping = false;
+                    if (callback) callback();
+                }
+            }
+            addChar();
+        }
+
+        function showButtons(options) {
+            const div = document.createElement('div');
+            div.className = 'btns';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.textContent = opt.text;
+                btn.onclick = () => {
+                    if (opt.action === 'end' || opt.next === null) {
+                        endGame();
+                    } else if (opt.action === 'restart') {
+                        restartGame();
+                    } else if (opt.next !== undefined) {
+                        loadStep(opt.next);
+                    }
+                };
+                div.appendChild(btn);
+            });
+            controlsDiv.appendChild(div);
+        }
+
+        function loadStep(stepId) {
+            const step = story.steps[stepId];
+            if (!step) {
+                endGame();
+                return;
+            }
+            
+            currentStep = stepId;
+            controlsDiv.innerHTML = '';
+            
+            let text = step.text;
+            if (typeof text === 'function') text = text(context);
+            
+            typeText(text, () => {
+                if (step.type === 'buttons') {
+                    showButtons(step.options);
+                }
+            });
+        }
+
+        function endGame() {
+            const msg = story.endMessages[Math.floor(Math.random() * story.endMessages.length)];
+            clearTypingArea();
+            const div = document.createElement('div');
+            div.className = 'message-line';
+            div.innerHTML = msg;
+            messageArea.appendChild(div);
+            controlsDiv.innerHTML = `
+                <div class="btns">
+                    <button id="restartBtn">начать сначала 💙</button>
+                </div>
+            `;
+            document.getElementById('restartBtn')?.addEventListener('click', () => restartGame());
+        }
+
+        function restartGame() {
+            document.querySelectorAll('.message-line').forEach(el => el.remove());
+            clearTypingArea();
+            context = {};
+            currentStep = 0;
+            loadStep(0);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStep(0);
+        });
+    </script>
+</body>
+</html>
